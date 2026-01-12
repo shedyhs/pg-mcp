@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(yarn install)",
+      "Bash(yarn build)",
+      "mcp__pg-mcp__pg_connect",
+      "mcp__pg-mcp__pg_list_schemas",
+      "mcp__pg-mcp__pg_get_ddl",
+      "mcp__pg-mcp__pg_query"
+    ]
+  }
+}

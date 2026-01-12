@@ -1,0 +1,46 @@
+{
+  "name": "pg-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for PostgreSQL - query databases, get DDL, with read-only mode protection",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "pg-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc && node dist/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "postgresql",
+    "postgres",
+    "database",
+    "claude",
+    "anthropic",
+    "model-context-protocol"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shedyfreak/pg-mcp"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "pg": "^8.13.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.0",
+    "typescript": "^5.6.0"
+  }
+}
