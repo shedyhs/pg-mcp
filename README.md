@@ -28,7 +28,7 @@ npm install -g pg-mcp
 ### From source
 
 ```bash
-git clone https://github.com/shedyfreak/pg-mcp
+git clone https://github.com/shedyhs/pg-mcp
 cd pg-mcp
 npm install
 npm run build
