@@ -66,6 +66,19 @@ Add to your `.claude/settings.json`:
 }
 ```
 
+Or if installed from source, add to `~/.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "node",
+      "args": ["/path/to/pg-mcp/dist/index.js"]
+    }
+  }
+}
+```
+
 ### With environment variable
 
 You can set `DATABASE_URL` to auto-connect:
