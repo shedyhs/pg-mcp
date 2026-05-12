@@ -1,7 +1,7 @@
 import pg from "pg";
 import { ConnectSchema } from "./schema.js";
 import { connections } from "../../shared/connections.js";
-import type { ToolResponse } from "../../shared/types.js";
+import type { ConnectionConfig, ToolResponse } from "../../shared/types.js";
 
 const { Pool } = pg;
 
@@ -61,7 +61,11 @@ export async function handleConnect(args: unknown): Promise<ToolResponse> {
   const versionResult = await client.query("SELECT version()");
   client.release();
 
-  connections.set(input.connectionId, { pool, readOnly: input.readOnly });
+  const config: ConnectionConfig = connectionUrl
+    ? { connectionString: connectionUrl }
+    : { host: input.host, port: input.port, database: input.database, user: input.user, password: input.password };
+
+  connections.set(input.connectionId, { pool, readOnly: input.readOnly, config });
 
   const modeText = input.readOnly ? " (READ-ONLY MODE)" : "";
   return {
