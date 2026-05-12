@@ -1,5 +1,6 @@
 import pg from "pg";
-import { ConnectSchema } from "./schema.js";
+import type { z } from "zod";
+import type { ConnectSchema } from "./schema.js";
 import { connections } from "../../shared/connections.js";
 import { resolveReadOnly } from "../../shared/types.js";
 import type { ConnectionConfig, ToolResponse } from "../../shared/types.js";
@@ -41,12 +42,10 @@ export function createPool(options?: {
     });
   }
 
-  // node-pg reads PGHOST, PGPORT, PGDATABASE, PGUSER, PGPASSWORD, PGSSLMODE natively
   return new Pool(POOL_OPTIONS);
 }
 
-export async function handleConnect(args: unknown): Promise<ToolResponse> {
-  const input = ConnectSchema.parse(args);
+export async function handleConnect(input: z.infer<typeof ConnectSchema>): Promise<ToolResponse> {
 
   if (connections.has(input.connectionId)) {
     return {

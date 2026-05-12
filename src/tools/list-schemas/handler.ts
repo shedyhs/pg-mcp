@@ -1,9 +1,9 @@
-import { ListSchemasSchema } from "./schema.js";
+import type { z } from "zod";
+import type { ListSchemasSchema } from "./schema.js";
 import { connections } from "../../shared/connections.js";
 import type { ToolResponse } from "../../shared/types.js";
 
-export async function handleListSchemas(args: unknown): Promise<ToolResponse> {
-  const input = ListSchemasSchema.parse(args);
+export async function handleListSchemas(input: z.infer<typeof ListSchemasSchema>): Promise<ToolResponse> {
 
   const conn = connections.get(input.connectionId);
   if (!conn) {

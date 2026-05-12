@@ -1,10 +1,13 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { DumpSchema } from "./schema.js";
+import type { z } from "zod";
+import type { DumpShape } from "./schema.js";
 import { connections } from "../../shared/connections.js";
 import type { ConnectionConfig, ToolResponse } from "../../shared/types.js";
 
 const execFileAsync = promisify(execFile);
+
+type DumpInput = z.objectOutputType<typeof DumpShape, z.ZodTypeAny>;
 
 const FORMAT_FLAGS: Record<string, string> = {
   plain: "p",
@@ -14,7 +17,7 @@ const FORMAT_FLAGS: Record<string, string> = {
 };
 
 function buildArgs(
-  input: ReturnType<typeof DumpSchema["parse"]>,
+  input: DumpInput,
   config: ConnectionConfig
 ): string[] {
   const args: string[] = [];
@@ -52,8 +55,13 @@ function buildArgs(
   return args;
 }
 
-export async function handleDump(args: unknown): Promise<ToolResponse> {
-  const input = DumpSchema.parse(args);
+export async function handleDump(input: DumpInput): Promise<ToolResponse> {
+  if (input.schemaOnly && input.dataOnly) {
+    return {
+      content: [{ type: "text", text: "schemaOnly and dataOnly are mutually exclusive" }],
+      isError: true,
+    };
+  }
 
   const conn = connections.get(input.connectionId);
   if (!conn) {

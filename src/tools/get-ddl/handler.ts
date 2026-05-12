@@ -1,10 +1,10 @@
 import type pg from "pg";
-import { GetDdlSchema } from "./schema.js";
+import type { z } from "zod";
+import type { GetDdlSchema } from "./schema.js";
 import { connections } from "../../shared/connections.js";
 import type { ToolResponse } from "../../shared/types.js";
 
-export async function handleGetDdl(args: unknown): Promise<ToolResponse> {
-  const input = GetDdlSchema.parse(args);
+export async function handleGetDdl(input: z.infer<typeof GetDdlSchema>): Promise<ToolResponse> {
 
   const conn = connections.get(input.connectionId);
   if (!conn) {

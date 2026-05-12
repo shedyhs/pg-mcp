@@ -1,10 +1,10 @@
-import { QuerySchema } from "./schema.js";
+import type { z } from "zod";
+import type { QuerySchema } from "./schema.js";
 import { isBlockedQuery } from "./blocked-patterns.js";
 import { connections } from "../../shared/connections.js";
 import type { ToolResponse } from "../../shared/types.js";
 
-export async function handleQuery(args: unknown): Promise<ToolResponse> {
-  const input = QuerySchema.parse(args);
+export async function handleQuery(input: z.infer<typeof QuerySchema>): Promise<ToolResponse> {
 
   const conn = connections.get(input.connectionId);
   if (!conn) {

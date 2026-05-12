@@ -1,13 +1,16 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { RestoreSchema } from "./schema.js";
+import type { z } from "zod";
+import type { RestoreShape } from "./schema.js";
 import { connections } from "../../shared/connections.js";
 import type { ConnectionConfig, ToolResponse } from "../../shared/types.js";
 
 const execFileAsync = promisify(execFile);
 
+type RestoreInput = z.objectOutputType<typeof RestoreShape, z.ZodTypeAny>;
+
 function buildArgs(
-  input: ReturnType<typeof RestoreSchema["parse"]>,
+  input: RestoreInput,
   config: ConnectionConfig
 ): string[] {
   const args: string[] = [];
@@ -45,8 +48,13 @@ function buildArgs(
   return args;
 }
 
-export async function handleRestore(args: unknown): Promise<ToolResponse> {
-  const input = RestoreSchema.parse(args);
+export async function handleRestore(input: RestoreInput): Promise<ToolResponse> {
+  if (input.schemaOnly && input.dataOnly) {
+    return {
+      content: [{ type: "text", text: "schemaOnly and dataOnly are mutually exclusive" }],
+      isError: true,
+    };
+  }
 
   const conn = connections.get(input.connectionId);
   if (!conn) {

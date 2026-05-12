@@ -1,9 +1,9 @@
-import { DisconnectSchema } from "./schema.js";
+import type { z } from "zod";
+import type { DisconnectSchema } from "./schema.js";
 import { connections } from "../../shared/connections.js";
 import type { ToolResponse } from "../../shared/types.js";
 
-export async function handleDisconnect(args: unknown): Promise<ToolResponse> {
-  const input = DisconnectSchema.parse(args);
+export async function handleDisconnect(input: z.infer<typeof DisconnectSchema>): Promise<ToolResponse> {
 
   const conn = connections.get(input.connectionId);
   if (!conn) {

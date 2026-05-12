@@ -6,25 +6,4 @@ export const QuerySchema = z.object({
   params: z.array(z.unknown()).optional().describe("Query parameters"),
 });
 
-export const queryToolDefinition = {
-  name: "pg_query",
-  description: "Execute a SQL query on a PostgreSQL database",
-  inputSchema: {
-    type: "object",
-    properties: {
-      connectionId: {
-        type: "string",
-        description: "Connection ID to use",
-      },
-      sql: {
-        type: "string",
-        description: "SQL query to execute",
-      },
-      params: {
-        type: "array",
-        description: "Query parameters for prepared statements",
-      },
-    },
-    required: ["connectionId", "sql"],
-  },
-} as const;
+export const queryDescription = "Execute a SQL query on a PostgreSQL database";
