@@ -36,7 +36,7 @@ function registerTool<T>(
 export function createServer(): McpServer {
   const server = new McpServer({
     name: "pg-mcp",
-    version: "1.0.0",
+    version: "1.0.1",
   });
 
   registerTool<z.infer<typeof ConnectSchema>>(server, "pg_connect", connectDescription, ConnectSchema.shape, handleConnect);

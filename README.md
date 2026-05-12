@@ -16,13 +16,13 @@ MCP (Model Context Protocol) server for PostgreSQL databases. Enables Claude and
 ### Using npx (recommended)
 
 ```bash
-npx pg-mcp
+npx -y @shedyhs/pg-mcp
 ```
 
 ### Global install
 
 ```bash
-npm install -g pg-mcp
+npm install -g @shedyhs/pg-mcp
 ```
 
 ### From source
@@ -45,7 +45,7 @@ Add to your `claude_desktop_config.json`:
   "mcpServers": {
     "postgres": {
       "command": "npx",
-      "args": ["pg-mcp"]
+      "args": ["-y", "@shedyhs/pg-mcp"]
     }
   }
 }
@@ -60,7 +60,7 @@ Add to your `.claude/settings.json`:
   "mcpServers": {
     "postgres": {
       "command": "npx",
-      "args": ["pg-mcp"]
+      "args": ["-y", "@shedyhs/pg-mcp"]
     }
   }
 }
@@ -90,7 +90,7 @@ When env vars are configured, the server auto-connects on startup with connectio
   "mcpServers": {
     "postgres": {
       "command": "npx",
-      "args": ["pg-mcp"],
+      "args": ["-y", "@shedyhs/pg-mcp"],
       "env": {
         "DATABASE_URL": "postgres://user:pass@localhost:5432/mydb"
       }
@@ -108,7 +108,7 @@ Standard PostgreSQL environment variables are supported (same ones used by `psql
   "mcpServers": {
     "postgres": {
       "command": "npx",
-      "args": ["pg-mcp"],
+      "args": ["-y", "@shedyhs/pg-mcp"],
       "env": {
         "PGHOST": "localhost",
         "PGPORT": "5432",
@@ -208,6 +208,8 @@ pg_get_ddl({ connectionId: "main", schema: "public" })
 | `pg_query` | Execute a SQL query |
 | `pg_list_schemas` | List all schemas in the database |
 | `pg_get_ddl` | Get complete DDL for the database |
+| `pg_dump` | Dump a database using pg_dump |
+| `pg_restore` | Restore a database using pg_restore |
 
 ## License
 

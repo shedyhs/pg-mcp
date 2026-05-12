@@ -1,6 +1,6 @@
 {
-  "name": "pg-mcp",
-  "version": "1.0.0",
+  "name": "@shedyhs/pg-mcp",
+  "version": "1.0.1",
   "description": "MCP server for PostgreSQL - query databases, get DDL, with read-only mode protection",
   "type": "module",
   "main": "dist/index.js",
@@ -25,10 +25,14 @@
     "anthropic",
     "model-context-protocol"
   ],
+  "author": "shedyhs",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/shedyhs/pg-mcp"
+    "url": "git+https://github.com/shedyhs/pg-mcp.git"
   },
   "engines": {
     "node": ">=18"
