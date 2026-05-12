@@ -1,9 +1,49 @@
 import pg from "pg";
 import { ConnectSchema } from "./schema.js";
 import { connections } from "../../shared/connections.js";
+import { resolveReadOnly } from "../../shared/types.js";
 import type { ConnectionConfig, ToolResponse } from "../../shared/types.js";
 
 const { Pool } = pg;
+
+const POOL_OPTIONS = {
+  max: 5,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
+} as const;
+
+function hasLibpqEnvVars(): boolean {
+  return !!(process.env.PGHOST || process.env.PGDATABASE);
+}
+
+export function createPool(options?: {
+  url?: string;
+  host?: string;
+  port?: number;
+  database?: string;
+  user?: string;
+  password?: string;
+  ssl?: boolean;
+}): pg.Pool {
+  if (options?.url) {
+    return new Pool({ connectionString: options.url, ...POOL_OPTIONS });
+  }
+
+  if (options?.host || options?.database) {
+    return new Pool({
+      host: options.host,
+      port: options.port,
+      database: options.database,
+      user: options.user,
+      password: options.password,
+      ssl: options.ssl ? { rejectUnauthorized: false } : false,
+      ...POOL_OPTIONS,
+    });
+  }
+
+  // node-pg reads PGHOST, PGPORT, PGDATABASE, PGUSER, PGPASSWORD, PGSSLMODE natively
+  return new Pool(POOL_OPTIONS);
+}
 
 export async function handleConnect(args: unknown): Promise<ToolResponse> {
   const input = ConnectSchema.parse(args);
@@ -21,41 +61,29 @@ export async function handleConnect(args: unknown): Promise<ToolResponse> {
   }
 
   const connectionUrl = input.url || process.env.DATABASE_URL;
+  const hasExplicitParams = !!(input.host || input.database || input.user || input.password);
 
-  if (!connectionUrl && (!input.host || !input.database || !input.user || !input.password)) {
+  if (!connectionUrl && !hasExplicitParams && !hasLibpqEnvVars()) {
     return {
       content: [
         {
           type: "text",
-          text: "Either 'url', DATABASE_URL environment variable, or all of 'host', 'database', 'user', 'password' must be provided.",
+          text: "Provide 'url', DATABASE_URL, individual parameters (host, database, user, password), or libpq env vars (PGHOST, PGDATABASE, PGUSER, PGPASSWORD).",
         },
       ],
       isError: true,
     };
   }
 
-  let pool: pg.Pool;
-
-  if (connectionUrl) {
-    pool = new Pool({
-      connectionString: connectionUrl,
-      max: 5,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 10000,
-    });
-  } else {
-    pool = new Pool({
-      host: input.host,
-      port: input.port,
-      database: input.database,
-      user: input.user,
-      password: input.password,
-      ssl: input.ssl ? { rejectUnauthorized: false } : false,
-      max: 5,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 10000,
-    });
-  }
+  const pool = createPool({
+    url: connectionUrl,
+    host: input.host,
+    port: input.port,
+    database: input.database,
+    user: input.user,
+    password: input.password,
+    ssl: input.ssl,
+  });
 
   const client = await pool.connect();
   const versionResult = await client.query("SELECT version()");
@@ -63,11 +91,14 @@ export async function handleConnect(args: unknown): Promise<ToolResponse> {
 
   const config: ConnectionConfig = connectionUrl
     ? { connectionString: connectionUrl }
-    : { host: input.host, port: input.port, database: input.database, user: input.user, password: input.password };
+    : hasExplicitParams
+      ? { host: input.host, port: input.port, database: input.database, user: input.user, password: input.password }
+      : {};
 
-  connections.set(input.connectionId, { pool, readOnly: input.readOnly, config });
+  const readOnly = resolveReadOnly(input.readOnly);
+  connections.set(input.connectionId, { pool, readOnly, config });
 
-  const modeText = input.readOnly ? " (READ-ONLY MODE)" : "";
+  const modeText = readOnly ? " (READ-ONLY MODE)" : "";
   return {
     content: [
       {

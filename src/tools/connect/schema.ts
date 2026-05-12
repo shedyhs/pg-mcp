@@ -9,12 +9,12 @@ export const ConnectSchema = z.object({
   user: z.string().optional().describe("Username"),
   password: z.string().optional().describe("Password"),
   ssl: z.boolean().default(false).describe("Use SSL connection"),
-  readOnly: z.boolean().default(true).describe("Enable read-only mode (blocks INSERT, UPDATE, DELETE, DDL). Default: true"),
+  readOnly: z.boolean().optional().describe("Enable read-only mode (blocks INSERT, UPDATE, DELETE, DDL). Default: true, or set PG_MCP_READ_ONLY env var"),
 });
 
 export const connectToolDefinition = {
   name: "pg_connect",
-  description: "Connect to a PostgreSQL database using a URL or individual parameters",
+  description: "Connect to a PostgreSQL database using a URL, individual parameters, or libpq env vars (PGHOST, PGDATABASE, PGUSER, PGPASSWORD). If DATABASE_URL or PGHOST/PGDATABASE are set, auto-connects as 'default' on startup.",
   inputSchema: {
     type: "object",
     properties: {
@@ -52,7 +52,7 @@ export const connectToolDefinition = {
       },
       readOnly: {
         type: "boolean",
-        description: "Enable read-only mode - blocks INSERT, UPDATE, DELETE, and DDL operations (default: true)",
+        description: "Enable read-only mode - blocks INSERT, UPDATE, DELETE, and DDL operations (default: true, or PG_MCP_READ_ONLY env var)",
       },
     },
     required: ["connectionId"],

@@ -79,9 +79,11 @@ Or if installed from source, add to `~/.mcp.json`:
 }
 ```
 
-### With environment variable
+### With environment variables
 
-You can set `DATABASE_URL` to auto-connect:
+When env vars are configured, the server auto-connects on startup with connection ID `"default"` — no need to call `pg_connect`.
+
+#### Using DATABASE_URL
 
 ```json
 {
@@ -97,9 +99,47 @@ You can set `DATABASE_URL` to auto-connect:
 }
 ```
 
+#### Using libpq env vars
+
+Standard PostgreSQL environment variables are supported (same ones used by `psql`, `pg_dump`, etc.):
+
+```json
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "npx",
+      "args": ["pg-mcp"],
+      "env": {
+        "PGHOST": "localhost",
+        "PGPORT": "5432",
+        "PGDATABASE": "mydb",
+        "PGUSER": "postgres",
+        "PGPASSWORD": "secret"
+      }
+    }
+  }
+}
+```
+
+#### pg-mcp specific env vars
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PG_MCP_READ_ONLY` | Enable read-only mode for auto-connect | `true` |
+
+Set `PG_MCP_READ_ONLY=false` to allow write operations on the default connection.
+
 ## Usage
 
-### Connect to database
+### Auto-connect (recommended)
+
+If `DATABASE_URL` or `PGHOST`/`PGDATABASE` are set, the server auto-connects as `"default"`. Use it directly:
+
+```
+pg_query({ connectionId: "default", sql: "SELECT * FROM users LIMIT 10" })
+```
+
+### Manual connect
 
 ```
 pg_connect({
@@ -121,6 +161,12 @@ pg_connect({
 })
 ```
 
+Or relying on libpq env vars:
+
+```
+pg_connect({ connectionId: "main" })
+```
+
 ### Read-only mode
 
 By default, connections are read-only. This blocks:
@@ -137,6 +183,8 @@ pg_connect({
   readOnly: false
 })
 ```
+
+Or via env var for auto-connect: `PG_MCP_READ_ONLY=false`
 
 ### Query examples
 

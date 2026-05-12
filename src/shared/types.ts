@@ -20,3 +20,10 @@ export interface ToolResponse {
   isError?: boolean;
   [key: string]: unknown;
 }
+
+export function resolveReadOnly(explicit?: boolean): boolean {
+  if (explicit !== undefined) return explicit;
+  const envVal = process.env.PG_MCP_READ_ONLY;
+  if (envVal !== undefined) return envVal !== "false" && envVal !== "0";
+  return true;
+}
