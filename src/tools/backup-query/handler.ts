@@ -6,7 +6,7 @@ import type { ToolResponse } from "../../shared/types.js";
 
 type BackupQueryInput = z.infer<typeof BackupQuerySchema>;
 
-function escapeValue(value: unknown): string {
+export function escapeValue(value: unknown): string {
   if (value === null || value === undefined) return "NULL";
   if (typeof value === "boolean") return value ? "TRUE" : "FALSE";
   if (typeof value === "number") return String(value);
@@ -21,7 +21,7 @@ function escapeValue(value: unknown): string {
   return `'${String(value).replace(/'/g, "''")}'`;
 }
 
-function buildInsert(table: string, columns: string[], row: Record<string, unknown>): string {
+export function buildInsert(table: string, columns: string[], row: Record<string, unknown>): string {
   const values = columns.map((col) => escapeValue(row[col]));
   return `INSERT INTO ${table} (${columns.map((c) => `"${c}"`).join(", ")}) VALUES (${values.join(", ")});`;
 }

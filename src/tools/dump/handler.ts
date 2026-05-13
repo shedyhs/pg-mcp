@@ -16,7 +16,7 @@ const FORMAT_FLAGS: Record<string, string> = {
   tar: "t",
 };
 
-function buildArgs(
+export function buildArgs(
   input: DumpInput,
   config: ConnectionConfig
 ): string[] {
