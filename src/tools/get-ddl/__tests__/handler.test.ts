@@ -112,6 +112,26 @@ describe("handleGetDdl", () => {
     expect(text).toContain("PRIMARY KEY (id)");
   });
 
+  it("generates DDL for table without primary key", async () => {
+    const { pool } = createMockPool({
+      "c.relkind = 'r'": {
+        rows: [{ schema: "public", table_name: "logs", table_oid: 99999 }],
+      },
+      pg_attrdef: {
+        rows: [
+          { column_name: "message", data_type: "text", not_null: false, default_value: null },
+        ],
+      },
+    });
+
+    connections.set("test", { pool, readOnly: true, config: {} });
+    const result = await handleGetDdl({ connectionId: "test" });
+    const text = result.content[0].text;
+    expect(text).toContain("CREATE TABLE public.logs");
+    expect(text).toContain("message text");
+    expect(text).not.toContain("PRIMARY KEY");
+  });
+
   it("generates DDL for foreign keys", async () => {
     const { pool } = createMockPool({
       "FOREIGN KEY": {

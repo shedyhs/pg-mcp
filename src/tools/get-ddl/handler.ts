@@ -198,10 +198,7 @@ async function extractUniqueConstraints(pool: pg.Pool, schemaFilter: string, ddl
   `);
 
   for (const uq of result.rows) {
-    const columns = Array.isArray(uq.columns)
-      ? uq.columns
-      : uq.columns.replace(/[{}]/g, '').split(',');
-    const cols = columns.join(", ");
+    const cols = uq.columns.join(", ");
     ddlParts.push(`-- UNIQUE: ${uq.constraint_name}`);
     ddlParts.push(
       `ALTER TABLE ${uq.schema}.${uq.table_name} ADD CONSTRAINT ${uq.constraint_name} UNIQUE (${cols});\n`
