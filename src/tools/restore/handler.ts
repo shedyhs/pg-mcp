@@ -9,7 +9,7 @@ const execFileAsync = promisify(execFile);
 
 type RestoreInput = z.objectOutputType<typeof RestoreShape, z.ZodTypeAny>;
 
-function buildArgs(
+export function buildArgs(
   input: RestoreInput,
   config: ConnectionConfig
 ): string[] {
