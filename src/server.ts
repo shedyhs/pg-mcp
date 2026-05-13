@@ -23,6 +23,9 @@ import { handleDump } from "./tools/dump/handler.js";
 import { RestoreShape, RestoreSchema, restoreDescription } from "./tools/restore/schema.js";
 import { handleRestore } from "./tools/restore/handler.js";
 
+import { BackupQuerySchema, backupQueryDescription } from "./tools/backup-query/schema.js";
+import { handleBackupQuery } from "./tools/backup-query/handler.js";
+
 function registerTool<T>(
   server: McpServer,
   name: string,
@@ -46,6 +49,7 @@ export function createServer(): McpServer {
   registerTool<z.infer<typeof GetDdlSchema>>(server, "pg_get_ddl", getDdlDescription, GetDdlSchema.shape, handleGetDdl);
   registerTool<z.infer<typeof DumpSchema>>(server, "pg_dump", dumpDescription, DumpShape, handleDump);
   registerTool<z.infer<typeof RestoreSchema>>(server, "pg_restore", restoreDescription, RestoreShape, handleRestore);
+  registerTool<z.infer<typeof BackupQuerySchema>>(server, "pg_backup_query", backupQueryDescription, BackupQuerySchema.shape, handleBackupQuery);
 
   return server;
 }
