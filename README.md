@@ -1,89 +1,14 @@
 # pg-mcp
 
-MCP (Model Context Protocol) server for PostgreSQL databases. Enables Claude and other AI assistants to query databases, inspect schemas, and get DDL - with built-in read-only protection.
+MCP server for PostgreSQL. Query databases, inspect schemas, backup data, and manage dumps — with built-in read-only protection.
 
-## Features
-
-- **pg_connect** - Connect to PostgreSQL databases (URL or individual params)
-- **pg_disconnect** - Disconnect from databases
-- **pg_query** - Execute SQL queries
-- **pg_list_schemas** - List all schemas
-- **pg_get_ddl** - Get complete DDL (tables, indexes, constraints, foreign keys, views)
-- **Read-only mode** - Blocks INSERT, UPDATE, DELETE, and DDL operations (enabled by default)
-
-## Installation
-
-### Using npx (recommended)
-
-```bash
-npx -y @shedyhs/pg-mcp
-```
-
-### Global install
+## Quick Start
 
 ```bash
 npm install -g @shedyhs/pg-mcp
 ```
 
-### From source
-
-```bash
-git clone https://github.com/shedyhs/pg-mcp
-cd pg-mcp
-npm install
-npm run build
-```
-
-## Configuration
-
-### Claude Desktop
-
-Add to your `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "postgres": {
-      "command": "npx",
-      "args": ["-y", "@shedyhs/pg-mcp"]
-    }
-  }
-}
-```
-
-### Claude Code
-
-Add to your `.claude/settings.json`:
-
-```json
-{
-  "mcpServers": {
-    "postgres": {
-      "command": "npx",
-      "args": ["-y", "@shedyhs/pg-mcp"]
-    }
-  }
-}
-```
-
-Or if installed from source, add to `~/.mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "postgres": {
-      "command": "node",
-      "args": ["/path/to/pg-mcp/dist/index.js"]
-    }
-  }
-}
-```
-
-### With environment variables
-
-When env vars are configured, the server auto-connects on startup with connection ID `"default"` — no need to call `pg_connect`.
-
-#### Using DATABASE_URL
+Add to your AI provider config:
 
 ```json
 {
@@ -99,117 +24,74 @@ When env vars are configured, the server auto-connects on startup with connectio
 }
 ```
 
-#### Using libpq env vars
+With `DATABASE_URL` or `PGHOST`/`PGDATABASE` set, the server auto-connects as `"default"` on startup.
 
-Standard PostgreSQL environment variables are supported (same ones used by `psql`, `pg_dump`, etc.):
+Set `PG_MCP_READ_ONLY=false` in `env` to allow write operations (read-only by default).
+
+## Tools
+
+| Tool | Description | Requires |
+|------|-------------|----------|
+| `pg_connect` | Connect to a PostgreSQL database (URL, params, or libpq env vars) | — |
+| `pg_disconnect` | Disconnect from a database | — |
+| `pg_query` | Execute SQL queries with read-only protection | — |
+| `pg_list_schemas` | List all user schemas | — |
+| `pg_get_ddl` | Get complete DDL (tables, indexes, constraints, FKs, sequences, enums, views) | — |
+| `pg_backup_query` | Backup specific rows as INSERT statements before destructive operations | — |
+| `pg_dump` | Dump a database or specific tables to a file | `pg_dump` CLI |
+| `pg_restore` | Restore a database from a dump file (custom, directory, or tar format) | `pg_restore` CLI |
+
+## Where to Put the Config
+
+| Provider | Config file |
+|----------|------------|
+| Claude Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) / `%APPDATA%\Claude\claude_desktop_config.json` (Windows) |
+| Claude Code | `.claude/settings.json` or `~/.claude/settings.json` |
+| Cursor | `.cursor/mcp.json` |
+| Windsurf | `~/.codeium/windsurf/mcp_config.json` |
+| Codex | `codex.json` |
+
+All providers above use the same JSON format from [Quick Start](#quick-start).
+
+**GitHub Copilot (VS Code)** uses a slightly different format in `.vscode/mcp.json`:
 
 ```json
 {
-  "mcpServers": {
+  "servers": {
     "postgres": {
+      "type": "stdio",
       "command": "npx",
       "args": ["-y", "@shedyhs/pg-mcp"],
       "env": {
-        "PGHOST": "localhost",
-        "PGPORT": "5432",
-        "PGDATABASE": "mydb",
-        "PGUSER": "postgres",
-        "PGPASSWORD": "secret"
+        "DATABASE_URL": "postgres://user:pass@localhost:5432/mydb"
       }
     }
   }
 }
 ```
 
-#### pg-mcp specific env vars
+**From source** — replace `command`/`args` with `"command": "node", "args": ["/path/to/pg-mcp/dist/index.js"]`.
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `PG_MCP_READ_ONLY` | Enable read-only mode for auto-connect | `true` |
+## Installing pg_dump & pg_restore
 
-Set `PG_MCP_READ_ONLY=false` to allow write operations on the default connection.
+Only needed if you use `pg_dump` or `pg_restore`. All other tools work without external dependencies.
 
-## Usage
+| OS | Command |
+|----|---------|
+| macOS | `brew install libpq` |
+| Debian/Ubuntu | `sudo apt-get install postgresql-client-16` |
+| RHEL/Fedora | `sudo dnf install postgresql16` |
+| Windows | `winget install PostgreSQL.PostgreSQL.16` |
 
-### Auto-connect (recommended)
+Verify with `pg_dump --version`.
 
-If `DATABASE_URL` or `PGHOST`/`PGDATABASE` are set, the server auto-connects as `"default"`. Use it directly:
+## Installation from Source
 
+```bash
+git clone https://github.com/shedyhs/pg-mcp
+cd pg-mcp
+npm install && npm run build
 ```
-pg_query({ connectionId: "default", sql: "SELECT * FROM users LIMIT 10" })
-```
-
-### Manual connect
-
-```
-pg_connect({
-  connectionId: "main",
-  url: "postgres://user:pass@localhost:5432/mydb"
-})
-```
-
-Or with individual parameters:
-
-```
-pg_connect({
-  connectionId: "main",
-  host: "localhost",
-  port: 5432,
-  database: "mydb",
-  user: "postgres",
-  password: "secret"
-})
-```
-
-Or relying on libpq env vars:
-
-```
-pg_connect({ connectionId: "main" })
-```
-
-### Read-only mode
-
-By default, connections are read-only. This blocks:
-- DML: INSERT, UPDATE, DELETE, TRUNCATE, MERGE
-- DDL: CREATE, ALTER, DROP, RENAME
-- DCL: GRANT, REVOKE
-
-To disable (use with caution):
-
-```
-pg_connect({
-  connectionId: "main",
-  url: "postgres://...",
-  readOnly: false
-})
-```
-
-Or via env var for auto-connect: `PG_MCP_READ_ONLY=false`
-
-### Query examples
-
-```sql
--- List tables
-SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
-
--- Query data
-SELECT * FROM users LIMIT 10;
-
--- Get table structure
-pg_get_ddl({ connectionId: "main", schema: "public" })
-```
-
-## Tools
-
-| Tool | Description |
-|------|-------------|
-| `pg_connect` | Connect to a PostgreSQL database |
-| `pg_disconnect` | Disconnect from a database |
-| `pg_query` | Execute a SQL query |
-| `pg_list_schemas` | List all schemas in the database |
-| `pg_get_ddl` | Get complete DDL for the database |
-| `pg_dump` | Dump a database using pg_dump |
-| `pg_restore` | Restore a database using pg_restore |
 
 ## License
 
