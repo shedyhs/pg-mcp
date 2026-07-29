@@ -36,11 +36,27 @@ function registerTool<T>(
   server.registerTool(name, { description, inputSchema: shape as any }, async (args: any) => handler(args));
 }
 
+const instructions = `Use these tools for ANY PostgreSQL work - exploring schemas, reading table structures, running queries, dumping and restoring - instead of shelling out to psql, pg_dump or pg_restore through Bash. They reuse a pooled connection, enforce read-only mode and return structured results.
+
+Connection handling: when DATABASE_URL (or PGHOST/PGDATABASE) is set, a connection named "default" is opened automatically at startup. Every tool falls back to it, so connectionId can be omitted. Only call pg_connect to reach an additional database.
+
+Typical flow:
+1. pg_list_schemas - see what the database contains
+2. pg_get_ddl - read tables, columns, indexes and foreign keys before writing SQL, instead of guessing names
+3. pg_query - run the statement
+
+Safety: before any DELETE or UPDATE, call pg_backup_query to write the affected rows to a .sql file as INSERT statements. It is the undo button.
+
+Read-only mode is on by default and rejects INSERT/UPDATE/DELETE/DDL. When a write is blocked, tell the user to set PG_MCP_READ_ONLY=false or to pass readOnly: false to pg_connect - never route around it with psql.`;
+
 export function createServer(): McpServer {
-  const server = new McpServer({
-    name: "pg-mcp",
-    version: "1.0.1",
-  });
+  const server = new McpServer(
+    {
+      name: "pg-mcp",
+      version: "1.0.3",
+    },
+    { instructions },
+  );
 
   registerTool<z.infer<typeof ConnectSchema>>(server, "pg_connect", connectDescription, ConnectSchema.shape, handleConnect);
   registerTool<z.infer<typeof DisconnectSchema>>(server, "pg_disconnect", disconnectDescription, DisconnectSchema.shape, handleDisconnect);
