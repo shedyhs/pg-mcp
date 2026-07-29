@@ -12,4 +12,5 @@ export const ConnectSchema = z.object({
   readOnly: z.boolean().optional().describe("Enable read-only mode (blocks INSERT, UPDATE, DELETE, DDL). Default: true, or set PG_MCP_READ_ONLY env var"),
 });
 
-export const connectDescription = "Connect to a PostgreSQL database using a URL, individual parameters, or libpq env vars (PGHOST, PGDATABASE, PGUSER, PGPASSWORD). If DATABASE_URL or PGHOST/PGDATABASE are set, auto-connects as 'default' on startup.";
+export const connectDescription =
+  "Open a PostgreSQL connection from a URL, individual parameters, or libpq env vars (PGHOST, PGDATABASE, PGUSER, PGPASSWORD). Usually NOT needed: when DATABASE_URL or PGHOST/PGDATABASE are set, the server auto-connects as 'default' at startup and every tool uses it. Call this only to reach a second database, or when a tool reports that connection 'default' was not found.";

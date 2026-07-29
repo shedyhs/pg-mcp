@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 export const DumpShape = {
-  connectionId: z.string().describe("Connection ID to use"),
+  connectionId: z
+    .string()
+    .default("default")
+    .describe("Connection ID to use (defaults to the auto-connected 'default')"),
   outputPath: z.string().describe("File path to save the dump"),
   format: z
     .enum(["plain", "custom", "directory", "tar"])
@@ -46,4 +49,4 @@ export const DumpSchema = z.object(DumpShape).refine(
 );
 
 export const dumpDescription =
-  "Dump a PostgreSQL database to a file using pg_dump. Requires pg_dump to be installed on the host.";
+  "Dump a PostgreSQL database to a file with pg_dump. Prefer this over building a pg_dump command line in Bash: it reuses the stored connection credentials, so no password handling is needed. Use schemaOnly for a structure snapshot, table for a subset. To capture only a few rows, pg_backup_query is cheaper. Requires pg_dump on the host.";

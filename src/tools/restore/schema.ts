@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 export const RestoreShape = {
-  connectionId: z.string().describe("Connection ID to use"),
+  connectionId: z
+    .string()
+    .default("default")
+    .describe("Connection ID to use (defaults to the auto-connected 'default')"),
   inputPath: z.string().describe("File path of the dump to restore"),
   schemaOnly: z.boolean().default(false).describe("Restore only schema, no data"),
   dataOnly: z.boolean().default(false).describe("Restore only data, no schema"),
@@ -51,4 +54,4 @@ export const RestoreSchema = z.object(RestoreShape).refine(
 );
 
 export const restoreDescription =
-  "Restore a PostgreSQL database from a dump file using pg_restore. Works with custom, directory, and tar formats. For plain SQL dumps, use pg_query instead. Requires pg_restore to be installed on the host.";
+  "Restore a PostgreSQL database from a dump file with pg_restore, reusing the stored connection credentials instead of a hand-built Bash command. Works with custom, directory and tar formats; for plain SQL dumps use pg_query. Requires pg_restore on the host and a connection that is not read-only.";

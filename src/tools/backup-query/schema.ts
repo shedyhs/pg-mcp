@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 export const BackupQueryShape = {
-  connectionId: z.string().describe("Connection ID to use"),
+  connectionId: z
+    .string()
+    .default("default")
+    .describe("Connection ID to use (defaults to the auto-connected 'default')"),
   outputPath: z.string().describe("File path to save the backup (.sql)"),
   targets: z
     .array(
@@ -19,4 +22,4 @@ export const BackupQueryShape = {
 export const BackupQuerySchema = z.object(BackupQueryShape);
 
 export const backupQueryDescription =
-  "Backup specific rows from one or more tables by generating INSERT statements into a .sql file. Useful for creating a safety net before DELETE operations.";
+  "Back up specific rows from one or more tables into a .sql file of INSERT statements. Run this BEFORE any DELETE or UPDATE that touches real data - it is the undo button, and it is far cheaper than a full pg_dump because it only captures the rows matched by each WHERE clause.";
