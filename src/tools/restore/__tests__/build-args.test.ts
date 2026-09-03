@@ -106,3 +106,29 @@ describe("restore buildArgs", () => {
     expect(args).toContain("orders");
   });
 });
+
+describe("password is never placed in argv", () => {
+  it("strips the password from a connection string, since /proc/PID/cmdline is world-readable", () => {
+    const config: ConnectionConfig = {
+      connectionString: "postgres://app:s3cret@db:5432/shop?sslmode=require",
+    };
+
+    const args = buildArgs(makeInput(), config);
+
+    expect(args.join(" ")).not.toContain("s3cret");
+    const dbArg = args[args.indexOf("-d") + 1];
+    expect(dbArg).toContain("db:5432/shop");
+    expect(dbArg).toContain("sslmode=require");
+  });
+
+  it("keeps a password out of argv when it contains URL delimiters", () => {
+    const config: ConnectionConfig = {
+      connectionString: "postgres://app:p%40ss%2Fw%23rd@db:5432/shop",
+    };
+
+    const args = buildArgs(makeInput(), config);
+
+    expect(args.join(" ")).not.toContain("p%40ss");
+    expect(args.join(" ")).not.toContain("p@ss");
+  });
+});

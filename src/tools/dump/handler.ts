@@ -3,6 +3,7 @@ import { promisify } from "node:util";
 import type { z } from "zod";
 import type { DumpShape } from "./schema.js";
 import { connections } from "../../shared/connections.js";
+import { splitPassword } from "../../shared/connection-url.js";
 import type { ConnectionConfig, ToolResponse } from "../../shared/types.js";
 
 const execFileAsync = promisify(execFile);
@@ -23,7 +24,9 @@ export function buildArgs(
   const args: string[] = [];
 
   if (config.connectionString) {
-    args.push("-d", config.connectionString);
+    // Without the password: argv is world-readable through /proc/PID/cmdline.
+    // The password goes through PGPASSWORD in the handler instead.
+    args.push("-d", splitPassword(config.connectionString).url);
   } else {
     if (config.host) args.push("-h", config.host);
     if (config.port) args.push("-p", String(config.port));
@@ -69,7 +72,7 @@ export async function handleDump(input: DumpInput): Promise<ToolResponse> {
       content: [
         {
           type: "text",
-          text: `Connection '${input.connectionId}' not found. Connect first using pg_connect.`,
+          text: `Connection '${input.connectionId}' not found. Call pg_list_connections to see the open ones, or pg_connect to open a new one.`,
         },
       ],
       isError: true,
@@ -82,8 +85,11 @@ export async function handleDump(input: DumpInput): Promise<ToolResponse> {
     string,
     string
   >;
-  if (conn.config.password) {
-    env.PGPASSWORD = conn.config.password;
+  const password = conn.config.connectionString
+    ? splitPassword(conn.config.connectionString).password
+    : conn.config.password;
+  if (password) {
+    env.PGPASSWORD = password;
   }
 
   try {

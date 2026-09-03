@@ -12,9 +12,13 @@ process.on("SIGINT", async () => {
 async function main() {
   const server = createServer();
   const transport = new StdioServerTransport();
+
+  // Started before the transport so every tool call can await it, but not
+  // awaited here: an unreachable database must not stall the MCP handshake.
+  void autoConnect().catch((error) => console.error(`Auto-connect aborted: ${error}`));
+
   await server.connect(transport);
   console.error("PostgreSQL MCP server running on stdio");
-  await autoConnect();
 }
 
 main().catch(console.error);

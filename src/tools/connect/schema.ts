@@ -13,4 +13,4 @@ export const ConnectSchema = z.object({
 });
 
 export const connectDescription =
-  "Open a PostgreSQL connection from a URL, individual parameters, or libpq env vars (PGHOST, PGDATABASE, PGUSER, PGPASSWORD). Usually NOT needed: when DATABASE_URL or PGHOST/PGDATABASE are set, the server auto-connects as 'default' at startup and every tool uses it. Call this only to reach a second database, or when a tool reports that connection 'default' was not found.";
+  "Open a PostgreSQL connection from a URL, individual parameters, or libpq env vars (PGHOST, PGDATABASE, PGUSER, PGPASSWORD). Usually NOT needed: connections declared in ~/.config/pg-mcp/connections.json, in PG_MCP_CONNECTIONS or in DATABASE_URL are opened at startup. Call pg_list_connections first - only use this tool for a database that is not configured at all.";

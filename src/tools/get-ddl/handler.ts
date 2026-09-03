@@ -12,7 +12,7 @@ export async function handleGetDdl(input: z.infer<typeof GetDdlSchema>): Promise
       content: [
         {
           type: "text",
-          text: `Connection '${input.connectionId}' not found. Connect first using pg_connect.`,
+          text: `Connection '${input.connectionId}' not found. Call pg_list_connections to see the open ones, or pg_connect to open a new one.`,
         },
       ],
       isError: true,

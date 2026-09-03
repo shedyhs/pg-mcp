@@ -1,6 +1,6 @@
 {
   "name": "@shedyhs/pg-mcp",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "MCP server for PostgreSQL - query databases, get DDL, with read-only mode protection",
   "type": "module",
   "main": "dist/index.js",

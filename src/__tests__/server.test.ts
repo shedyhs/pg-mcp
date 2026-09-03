@@ -31,7 +31,8 @@ describe("createServer", () => {
     expect(names).toContain("pg_dump");
     expect(names).toContain("pg_restore");
     expect(names).toContain("pg_backup_query");
-    expect(names).toHaveLength(8);
+    expect(names).toContain("pg_list_connections");
+    expect(names).toHaveLength(9);
   });
 
   it("can call pg_query tool and get connection error", async () => {
